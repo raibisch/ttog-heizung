@@ -70,7 +70,6 @@ int i = 0;
 
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
-
 OneWire ow(IN_ONEWIRE);
 
 
