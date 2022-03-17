@@ -1,0 +1,65 @@
+
+     <!DOCTYPE html>
+     <html lang="en">
+     
+     <head>
+       <meta charset="utf-8">
+       <meta name="viewport"
+         content="width=device-width, initial-scale=1">
+     </head>
+     <body>
+       <center>
+         <h3>
+         Parameter-Eingabe
+         </h3>
+       <div class="container">
+         <form name="inputnumber" 
+           autocomplete="off">
+           <b>Wert 1:</b>
+           <input type="number"
+             id="1"
+             placeholder="max=10"
+             max="10" 
+             onkeypress="return onlyNumberKey(event)"
+           >
+           <br>
+           <b>Wert 2:</b>
+           <input type="number"
+             id="2"
+             onkeypress="return onlyNumberKey(event)" 
+            >
+           <br>
+             <b>Wert 3:</b>
+             <input type="number"
+               id="3"
+               placeholder="min=5 max=80"
+               min="5" max="70" />
+             <input type="submit"
+               value="Submit"
+               onclick="return detailssubmit()"
+             >
+         </form>
+       </div>
+       <p> <a href="index.html">Zurueck</a></p>
+       </center>
+     </body>
+     <script>
+       function onlyNumberKey(evt) 
+       {
+         
+         // Only ASCII character in that range allowed
+         var ASCIICode = (evt.which) ? evt.which : evt.keyCode
+         if (ASCIICode > 31 && (ASCIICode < 48 || ASCIICode > 57))
+           return false;
+         return true;
+       }
+     </script>
+     <script>
+       function detailssubmit() 
+       {
+         alert("Your details were Submitted");
+       }
+     </script>
+     
+     </html>
+     

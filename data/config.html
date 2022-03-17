@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+   <title>Heizung config.txt</title>
+   <meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport">
+   <link rel="stylesheet" type="text/css" href="style.css">
+   <meta charset="UTF-8">
+</head>
+
+<body>
+
+<div  class="container">
+   <!-- Formular zum Editieren und Speichern der Einstellungsdaten -->
+   <!-- siehe:   https://ullisroboterseite.de/projekte-haus-wetter-config.html   -->
+
+   <form action="config.html" method="POST">
+     <p>Heizung 'config.txt'</p>
+     <textarea autocorrect="off" name="saveconfig">%CONFIG%</textarea>
+     <button class="button3" type="submit">Speichern</button>
+   </form>
+   
+    <!-- Formular loeschen der History -->
+    <form action="config.html" method="POST">
+      <p><input class="button3" name="deletehistory" type="submit" value="l&ouml;sche Historie"></p>
+   </form>
+
+   <!-- Formular zum Auslösen eines Neustarts -->
+   <form action="config.html" method="POST">
+      <p><input class="button3" name="reboot" type="submit" value="ESP&nbsp;&nbsp;Neustart"></p>
+   </form>
+
+   <a class="button3" href="index.html">zur&uuml;ck</a>
+</div>
+</body>
+</html>

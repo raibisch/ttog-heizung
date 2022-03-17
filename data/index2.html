@@ -1,0 +1,83 @@
+<html>
+<head>
+<script type="text/javascript" src="dygraph.js"></script>
+</head>
+<body>
+<p> Temp 1: #TEMP1# </p>
+<p>Temperatur-Verlauf: </p>
+<div id="graphdiv1" style="width:80%; height:300px;"></div>
+</br>
+<p>Dynamic Test: </p>
+<div id="div_g" style="width:80%; height:300px;"></div>
+
+
+<script type="text/javascript">
+  var varTemp = 0;
+  const Http = new XMLHttpRequest();
+  const url='/get?message=JGTEST';
+  Http.open("GET", url);
+  Http.send();
+
+  Http.onreadystatechange=(e)=>
+  {
+    //varTemp = Http.responseText;
+   console.log(Http.responseText)
+  }
+
+  function myUpdate()
+  {
+    return Math.random();
+  }
+
+  g2 = new Dygraph(
+    document.getElementById("graphdiv1"),
+    "temp.csv", // path to CSV file
+    {}          // options
+  );
+
+
+      var data = [];
+      var t = new Date();
+      for (var i = 10; i >= 0; i--)
+      {
+        var x = new Date(t.getTime() - i * 1000);
+        data.push([x, Math.random()]);
+      }
+
+      var g = new Dygraph(document.getElementById("div_g"), data,
+                          {
+                            drawPoints: true,
+                            showRoller: true,
+                            valueRange: [0.0, 1.2],
+                            labels: ['Time', 'Random']
+                          });
+
+
+    const Http_1 = new XMLHttpRequest();
+    Http_1.onreadystatechange=(e)=>
+                          {
+                              //varTemp = Http.responseText;
+                              console.log(Http.responseText);
+                          }
+      setInterval(function()
+      {
+
+        //const Http1 = new XMLHttpRequest();
+        const url='/temp';
+        Http_1.open("GET", url);
+        Http_1.send();
+
+
+
+        var x = new Date();  // current time
+        //var y = Math.random();
+        var y = myUpdate();
+        data.push([x, y]);
+        g.updateOptions( { 'file': data } );
+      }, 1000);
+
+
+
+</script>
+</body>
+</html>

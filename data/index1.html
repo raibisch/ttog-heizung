@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <script src="test.js"></script>
+    </head>
+
+    <body onload="setHist()">
+      <script>
+      //String.prototype.replaceAll = function(search, replacement)
+      //{
+      //    var target = this;
+      //    return target.replace(new RegExp(search, 'g'), replacement);
+      //};
+      function setHist()
+      {
+           var txt = "%HISTORY%";
+           //str.replace(new RegExp('hello'), 'hi');
+           document.getElementById("HISTORY").innerHTML = txt.replace(/END/g,"\n");
+      }
+      </script>
+        <p> Kessel: <strong id="TEMPK">%TEMPK%</strong> (C)</p>
+        <p> WW    : <strong id="TEMPWW">%TEMPWW%</strong> (C)</p>
+        <p> Kessel: <strong id="TEMPK">%TEMPK%</strong> (C)</p>
+        <p> WW    : <strong id="TEMPAU">%TEMPAU%</strong> (C)</p>
+        <p> History:<pre id="HISTORY">%HISTORY%</pre></p>
+        <p> Date-Time:<strong id="DATE">X</strong></p>
+
+        <button onclick="openAlert()">Click me</button>
+         <a href="/">Start-Page</a>
+    </body>
+
+</html>

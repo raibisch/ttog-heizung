@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>HEIZUNG Test</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type="text/javascript"  src="dygraph.js"></script>
+</head>
+ </head>
+ <body>
+  <h1>JG HEIZUNG Test</h1>
+  <p></p>
+  <table>
+    <tr>
+      <th>Kessel &degC. </th>
+      <th>WW-Temp. &degC</th>
+      <th>Vorlauf &degC</th>
+      <th>Aussen &degC</th>
+    </tr>
+    <tr>
+      <td id="TEMPK">%TEMPK%</td>
+      <td id="TEMPWW">%TEMPWW%</td>
+      <td id="TEMPHE">%TEMPHE%</td>
+      <td id="TEMPAU">%TEMPAU%</td>
+    </tr>
+  </table>
+  
+  <p>HEIZUNG   : <strong id="HEIZUNG">%HEIZUNG%</strong></p>
+  <p>WW-Ventil : <strong id="VENTIL">%VENTIL%</strong></p>
+  
+  <!-- <p>Kessel    : <strong id="TEMPK">%TEMPK%</strong>(&degC)</p>
+  <p>Warmwasser: <strong id="TEMPWW">%TEMPWW%</strong>(&degC)</p>
+  <p>Heiz.Vorl.: <strong id="TEMPHE">%TEMPHE%</strong>(&degC)</p>
+  <p>Aussen    : <strong id="TEMPAU">%TEMPAU%</strong>(&degC)</p> -->
+
+  <p><a href="/offheiz"><button class="button">Heiz-OFF</button></a> <a href="/offventil"><button class="button">Ventil-Heiz</button></a></p>
+  <p><a href="/onheiz"><button class="button button2">Heiz-ON</button></a> <a href="/onventil"><button class="button button2">Ventil-WW</button></a></p>
+  <p> <a class="button3" href="index1.html">Index1</a></p>
+  <p> <a class="button3" href="config.html">Einstellungen</a></p>
+  <p> Temp-Graph:</p>
+  <div id="graphdiv2"; class="graph"; > </div>
+  </br>
+  <div id="div_g";     class="graph"; > </div>
+
+  <script type="text/javascript">
+    var data = [];
+    var t = new Date();
+    var tempK = 20;
+    var tempWW= 21;
+    var tempHE= 23;
+    var tempAU= 19;
+    var myHist = "%HIST%";
+
+
+    function reqListener ()
+    {
+      var myResponse = this.responseText;
+      //console.log(this.responseText);
+      var myArray = myResponse.split(",");
+      //console.log(myArray);
+
+      tempK = parseFloat(myArray[0]);
+      tempWW  = parseFloat(myArray[1]);
+      tempHE = parseFloat(myArray[2]);
+      tempAU  = parseFloat(myArray[3]);
+      document.getElementById('TEMPK').innerHTML  = myArray[0];
+      document.getElementById('TEMPWW').innerHTML = myArray[1];
+      document.getElementById('TEMPHE').innerHTML = myArray[2];
+      document.getElementById('TEMPAU').innerHTML = myArray[3];
+      document.getElementById('HEIZUNG').innerHTML  = myArray[4];
+      document.getElementById('VENTIL').innerHTML  = myArray[5];
+    }
+
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", reqListener);
+    //oReq.open("GET", "/fetch");
+    //oReq.send();
+
+    // Read from file
+    /*
+    var g2 = new Dygraph(document.getElementById("graphdiv2"),"temp.csv",
+                          {
+                            strokeWidth: 2,
+                            legend: 'always',
+                            showRangeSelector: 'true',
+                            series:
+                            {
+                              Temp1: { color: 'red'},
+                              Temp2: { color: 'blue'}
+                            }
+                          }
+                        );
+     */
+
+/*
+     var g2 = new Dygraph(document.getElementById("graphdiv2"),myHist.replace(/END/g,"\n"),
+                           {
+                             strokeWidth: 2,
+                             legend: 'always'
+                           }
+                         );
+*/
+     // Read from array;
+    // no empty data element allowed
+    //for (var i = 1; i >= 0; i--)
+    //{
+      var dx = new Date();
+      data.push([dx, tempK, tempWW, tempHE, tempAU]);
+    //}
+
+    var g = new Dygraph(document.getElementById("div_g"), data,
+                        {
+                          //drawPoints: true,
+                          //showRoller: true,
+                          strokeWidth: 2,
+                          //valueRange: [20.0, 70.0]
+                          labels: ['Time', 'Temp-Kessel', 'Temp-WW', 'Temp-Heizung','Temp-Aussen']
+                        });
+
+
+    setInterval(function()
+    {
+      var dateNow = new Date();  // current time
+      //var y = Math.random();
+      oReq.open("GET", "/fetch");
+      oReq.send();
+      data.push([dateNow, tempK, tempWW, tempHE, tempAU]);
+      g.updateOptions( { 'file': data } );
+    }, 2000);
+
+  </script>
+ </body>
+</html>
