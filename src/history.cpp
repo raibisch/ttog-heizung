@@ -28,5 +28,5 @@ bool history_save()
  
 float get_Heizoel_l_Verbrauch()
 {
-  return (float)((uint64_t)(Device_allg.sec_brenner_on_sum * Config_val.mliter_oel_pro_h) / (float)3600000);
+  return (float)((uint64_t)(Device_allg.sec_brenner_on_sum * Config_val.mliter_oel_pro_h/10) / (float)360000);
 }
