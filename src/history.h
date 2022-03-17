@@ -31,7 +31,7 @@ typedef struct
 } struct_history_string;
 
 extern void history_init();
-
 extern bool history_save();
+extern float get_Heizoel_l_Verbrauch();
 
 #endif

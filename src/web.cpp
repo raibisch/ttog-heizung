@@ -272,8 +272,8 @@ void server_init()
                String(Device_allg.temp_aussen)    + "," +
                brenner + "," +
                netz +"," +
-               //String((long)Device_allg.sec_brenner_on_sum);
-               uint64ToString(Device_allg.sec_brenner_on_sum);
+               String(get_Heizoel_l_Verbrauch());
+               //uint64ToString(Device_allg.sec_brenner_on_sum);
 
     Serial.println("server.on /fetch: "+ s);
     request->send(200, "text/plain", s);
