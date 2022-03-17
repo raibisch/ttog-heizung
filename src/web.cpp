@@ -254,29 +254,38 @@ void server_init()
 
   server.on("/fetch", HTTP_GET, [](AsyncWebServerRequest *request)
   {
+    
     Serial.println("Request /fetch");
+    String netz    = "ON";
     String brenner = "ON";
-    String netz= "ON";
+    String ventil  = "ON";
+   
+    if (Device_Heizung.active == false)
+    {
+       netz = "OFF";
+    }
+     if (Device_WWSpeicher.active  == false)
+    {
+      ventil = "OFF";
+    }
+    
     if (Device_BrennerKessel.active == false)
     {
       brenner = "OFF";
     }
-    if (Device_Heizung.active == false)
-    {
-      netz = "OFF";
-    }
+    
     loop_active =true;
     String s = String(Device_BrennerKessel.temp_akt) + "," +
                String(Device_WWSpeicher.temp_akt)    + "," +
                String(Device_Heizung.temp_akt)    + "," +
                String(Device_allg.temp_aussen)    + "," +
+               netz + "," +
+               ventil +"," +
                brenner + "," +
-               netz +"," +
                String(get_Heizoel_l_Verbrauch());
-               //uint64ToString(Device_allg.sec_brenner_on_sum);
 
-    Serial.println("server.on /fetch: "+ s);
     request->send(200, "text/plain", s);
+    Serial.println("server.on /fetch: "+ s);
     loop_active = false;
   });
 

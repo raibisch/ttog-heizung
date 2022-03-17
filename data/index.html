@@ -18,20 +18,27 @@
       <th>Aussen &degC</th>
     </tr>
     <tr>
-      <td id="TEMPK">%TEMPK%</td>
-      <td id="TEMPWW">%TEMPWW%</td>
-      <td id="TEMPHE">%TEMPHE%</td>
-      <td id="TEMPAU">%TEMPAU%</td>
+      <td id="TEMPK">--.--</td>
+      <td id="TEMPWW">--.--</td>
+      <td id="TEMPHE">--.--</td>
+      <td id="TEMPAU">--.--</td>
     </tr>
   </table>
-  
-  <p>HEIZUNG   : <strong id="HEIZUNG">%HEIZUNG%</strong></p>
-  <p>WW-Ventil : <strong id="VENTIL">%VENTIL%</strong></p>
-  
-  <!-- <p>Kessel    : <strong id="TEMPK">%TEMPK%</strong>(&degC)</p>
-  <p>Warmwasser: <strong id="TEMPWW">%TEMPWW%</strong>(&degC)</p>
-  <p>Heiz.Vorl.: <strong id="TEMPHE">%TEMPHE%</strong>(&degC)</p>
-  <p>Aussen    : <strong id="TEMPAU">%TEMPAU%</strong>(&degC)</p> -->
+  <p></p>
+  <table>
+    <tr>
+      <th>Netz </th>
+      <th>Brenner</th>
+      <th>WW-Ventil</th>
+      <th>Oel-Verb.(l)</th>
+    </tr>
+    <tr>
+      <td id="NETZ">.</td>
+      <td id="BRENNER">.</td>
+      <td id="VENTIL">.</td>
+      <td id="VERBRAUCH">.-</td>
+    </tr>
+  </table>
 
   <p><a href="/offheiz"><button class="button">Heiz-OFF</button></a> <a href="/offventil"><button class="button">Ventil-Heiz</button></a></p>
   <p><a href="/onheiz"><button class="button button2">Heiz-ON</button></a> <a href="/onventil"><button class="button button2">Ventil-WW</button></a></p>
@@ -49,7 +56,7 @@
     var tempWW= 21;
     var tempHE= 23;
     var tempAU= 19;
-    var myHist = "%HIST%";
+    var tempVerb = 0.0;
 
 
     function reqListener ()
@@ -59,16 +66,49 @@
       var myArray = myResponse.split(",");
       //console.log(myArray);
 
+      // wird für dygraph benoetigt
       tempK = parseFloat(myArray[0]);
       tempWW  = parseFloat(myArray[1]);
       tempHE = parseFloat(myArray[2]);
       tempAU  = parseFloat(myArray[3]);
+
       document.getElementById('TEMPK').innerHTML  = myArray[0];
       document.getElementById('TEMPWW').innerHTML = myArray[1];
       document.getElementById('TEMPHE').innerHTML = myArray[2];
       document.getElementById('TEMPAU').innerHTML = myArray[3];
-      document.getElementById('HEIZUNG').innerHTML  = myArray[4];
+
+      // Beispiel : https://code-boxx.com/change-override-css-with-javascript
+      document.getElementById('NETZ').innerHTML  = myArray[4];
+      if (myArray[4] == "ON")
+      {
+        myStile = document.getElementById('NETZ').style.background = 'red';
+      }
+      else
+      {
+        document.getElementById('NETZ').style.background = 'blue';
+      }
+
       document.getElementById('VENTIL').innerHTML  = myArray[5];
+      if (myArray[5] == "ON")
+      {
+        myStile = document.getElementById('VENTIL').style.background = 'red';
+      }
+      else
+      {
+        document.getElementById('VENTIL').style.background = 'blue';
+      }
+
+      document.getElementById('BRENNER').innerHTML  = myArray[6];
+      if (myArray[6] == "ON")
+      {
+        myStile = document.getElementById('BRENNER').style.background = 'red';
+      }
+      else
+      {
+        document.getElementById('BRENNER').style.background = 'blue';
+      }
+
+      document.getElementById('VERBRAUCH').innerHTML  = myArray[7];
     }
 
     var oReq = new XMLHttpRequest();
