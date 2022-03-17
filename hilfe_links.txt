@@ -1,0 +1,7 @@
+
+Text Felder:
+https://www.geeksforgeeks.org/how-to-get-the-value-of-text-input-field-using-javascript/?ref=lbp
+
+für Zahlen:
+https://www.geeksforgeeks.org/how-to-force-input-field-to-enter-numbers-only-using-javascript/
+
