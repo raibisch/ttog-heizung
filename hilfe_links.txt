@@ -5,3 +5,26 @@ https://www.geeksforgeeks.org/how-to-get-the-value-of-text-input-field-using-jav
 für Zahlen:
 https://www.geeksforgeeks.org/how-to-force-input-field-to-enter-numbers-only-using-javascript/
 
+
+neue Onewire Probleme:
+https://githubmemory.com/repo/PaulStoffregen/OneWire/issues/100
+
+https://github.com/pstolarz/OneWireNg
+
+https://github.com/PaulStoffregen/OneWire
+
+Serielle Konsole für Website:
+https://registry.platformio.org/libraries/ayushsharma82/WebSerial/installation
+
+.. sehr viel kleiner !:
+https://github.com/Apthox/Javascript-Terminal
+
+Javascript entwickeln und debuggen
+https://www.freecodecamp.org/news/how-to-set-up-a-front-end-development-project/
+
+fixed ttyUSBx
+https://dominoc925.blogspot.com/2019/11/fix-usb-serial-adapters-to-static.html
+
+OTA Class mit curl Upload Beispiel
+https://github.com/scottchiefbaker/ESP-WebOTA
+
