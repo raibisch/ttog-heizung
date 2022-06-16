@@ -1,6 +1,12 @@
 #ifndef TTGO_IODEV_H
 #define TTGO_IODEV_H
 
+// Pin definition HELTEC WIFI-KIT32
+//#define HELTEC_WIFI_KIT32
+#ifdef HELTEC_WIFI_KIT32
+static const uint8_t LED_BUILTIN = 25;
+#endif
+
 // Pin definetion of TTGO T5 V1-3
 #define BUTTON1     38   // GPIO38
 #define BUTTON2     37   // GPIO37

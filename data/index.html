@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html>
  <head>
-  <meta charset="utf-8"/>
-  <title>HEIZUNG Test</title>
+  <meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport">
   <link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="utf-8"/>
   <script type="text/javascript"  src="dygraph.js"></script>
+  <title>HEIZUNG Test</title>
 </head>
  </head>
  <body>
-  <h1>JG HEIZUNG Test</h1>
+  <h3>HEIZUNG</h3>
   <p></p>
   <table>
     <tr>
-      <th>Kessel &degC. </th>
-      <th>WW-Temp. &degC</th>
-      <th>Vorlauf &degC</th>
-      <th>Aussen &degC</th>
+      <th>Kessel  &degC. </th>
+      <th>WW.     &degC </th>
+      <th>Rueckl. &degC</th>
+      <th>Aussen  &degC</th>
+    </tr>
+    <tr>
+      <th class="empty"></th>
+      <th>Soll:%WWSOLL%</th>
+      <th class="empty"></th>
+      <th>Winter:%WINTER%</th>
     </tr>
     <tr>
       <td id="TEMPK">--.--</td>
@@ -28,22 +35,43 @@
   <table>
     <tr>
       <th>Netz </th>
-      <th>Brenner</th>
+      <th>Brenner-Oel(l)</th>
       <th>WW-Ventil</th>
-      <th>Oel-Verb.(l)</th>
+      <!-- <th>Oel-Verb.(l)</th> -->
     </tr>
     <tr>
       <td id="NETZ">.</td>
       <td id="BRENNER">.</td>
       <td id="VENTIL">.</td>
-      <td id="VERBRAUCH">.-</td>
+      <!-- <td id="VERBRAUCH">.-</td> -->
+    </tr>
+    <tr class="empty">
+      <td class="buttonon"><a href="/onheiz">EIN</a></td>
+      <td class="empty"> </td>
+      <td class="buttonon"><a href="/onventil">EIN</a></a></td>
+      <!-- <td id="VERBRAUCH">.-</td> -->
+    </tr>
+    <tr class="empty">
+      <td class="buttonoff"><a href="/offheiz">AUS</a></td>
+      <td class="empty"> </td>
+      <td class="buttonoff"><a href="/offventil">AUS</a></a></td>
+      <!-- <td id="VERBRAUCH">.-</td> -->
     </tr>
   </table>
-
-  <p><a href="/offheiz"><button class="button">Heiz-OFF</button></a> <a href="/offventil"><button class="button">Ventil-Heiz</button></a></p>
-  <p><a href="/onheiz"><button class="button button2">Heiz-ON</button></a> <a href="/onventil"><button class="button button2">Ventil-WW</button></a></p>
-  <p> <a class="button3" href="index1.html">Index1</a></p>
-  <p> <a class="button3" href="config.html">Einstellungen</a></p>
+  <p><div id="ONSTAT">.</div></p>
+  <!----
+  <p><a href="/offheiz"><button class="button3">Heiz-OFF</button></a> 
+    <a href="/offventil"><button class="button3">Ventil-Heiz</button></a></p>
+  <p><a href="/onheiz"><button class="button2">Heiz-ON</button></a> 
+     <a href="/onventil"><button class="button2">Ventil-WW</button></a></p>
+  </p> <a class="button3" href="index1.html">Index1</a>
+  </p> 
+  -->
+  <a class="button3" href="config.html">Einstellungen</a>
+  </p>
+  <a class="button3" href="ota.html">Update</a>  
+  </p> 
+  <a class="button3" href="log.html">Log-Terminal</a>
   <p> Temp-Graph:</p>
   <div id="graphdiv2"; class="graph"; > </div>
   </br>
@@ -57,8 +85,9 @@
     var tempHE= 23;
     var tempAU= 19;
     var tempVerb = 0.0;
-
-
+    var onStatus = 1;
+    var OnStatusText = ['Status:AUS','EIN:manuell','EIN:Brenner aktiv','EIN:WW niedrig', 'EIN:WINTER','EIN:SOMMER', 'EIN:Woche', 'EIN:Wochenende', 'Ein:Nachlauf'];
+    
     function reqListener ()
     {
       var myResponse = this.responseText;
@@ -71,11 +100,18 @@
       tempWW  = parseFloat(myArray[1]);
       tempHE = parseFloat(myArray[2]);
       tempAU  = parseFloat(myArray[3]);
+      oelLiter= parseFloat(myArray[7]) /1000;
+      onStatus = parseInt(myArray[8]);
 
       document.getElementById('TEMPK').innerHTML  = myArray[0];
       document.getElementById('TEMPWW').innerHTML = myArray[1];
       document.getElementById('TEMPHE').innerHTML = myArray[2];
       document.getElementById('TEMPAU').innerHTML = myArray[3];
+      console.info('onStatus:'+ onStatus);
+      if (onStatus <= 8)
+      {
+        document.getElementById('ONSTAT').innerHTML = OnStatusText[onStatus];
+      }
 
       // Beispiel : https://code-boxx.com/change-override-css-with-javascript
       document.getElementById('NETZ').innerHTML  = myArray[4];
@@ -98,7 +134,7 @@
         document.getElementById('VENTIL').style.background = 'blue';
       }
 
-      document.getElementById('BRENNER').innerHTML  = myArray[6];
+      document.getElementById('BRENNER').innerHTML  = oelLiter;
       if (myArray[6] == "ON")
       {
         myStile = document.getElementById('BRENNER').style.background = 'red';
@@ -108,7 +144,7 @@
         document.getElementById('BRENNER').style.background = 'blue';
       }
 
-      document.getElementById('VERBRAUCH').innerHTML  = myArray[7];
+      // document.getElementById('VERBRAUCH').innerHTML  = mdyArray[7];
     }
 
     var oReq = new XMLHttpRequest();
@@ -166,7 +202,7 @@
       oReq.send();
       data.push([dateNow, tempK, tempWW, tempHE, tempAU]);
       g.updateOptions( { 'file': data } );
-    }, 2000);
+    }, 1000);
 
   </script>
  </body>

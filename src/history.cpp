@@ -15,7 +15,7 @@ void history_init()
 {
    hist.begin("history", false); // use history
    Device_allg.sec_brenner_on_sum = hist.getULong64("heizall",0);
-   Serial.printf("Heizoel-Verbrauch (l): %4.2f\n",get_Heizoel_l_Verbrauch());
+   Serial.printf("Heizoel-Verbrauch (l): %4.2f\n",get_Heizoel_mLiter_Verbrauch()/(float)1000);
    Device_allg.sec_brenner_old_sum = Device_allg.sec_brenner_on_sum;
 }
 
@@ -26,7 +26,7 @@ bool history_save()
   return true;
 }
  
-float get_Heizoel_l_Verbrauch()
+uint32_t get_Heizoel_mLiter_Verbrauch()
 {
-  return (float)((uint64_t)(Device_allg.sec_brenner_on_sum * Config_val.mliter_oel_pro_h/10) / (float)360000);
+  return (uint32_t)((uint64_t)(Device_allg.sec_brenner_on_sum * Config_val.mliter_oel_pro_h/10) / (uint32_t)360);
 }

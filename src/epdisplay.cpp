@@ -6,9 +6,9 @@
 //#endif
 
 // fuer HELTEC Wifi Kit32 
-#ifndef OLED_DISPLAY 
-#define OLED_DISPLAY 
-#endif
+//#ifndef OLED_DISPLAY 
+//#define OLED_DISPLAY 
+//#endif
 
 #include "epdisplay.h"
 
@@ -31,8 +31,6 @@ void display_Init()
 
 #ifdef NO_DISPLAY
   return;
-  UpdateHistory();
-  
 #endif
 
 #ifdef OLED_DISPLAY

@@ -111,14 +111,13 @@ void jg18b20Search(OneWire ow)
         break;
       }
       oldRomLastByte = owROM[7];
-      uint8_t is = Config_val.sensor_ix[ix];
+      uint8_t is = ix;
        Serial.print("sensor_ix:");
       Serial.println(ix);
      
       Serial.print(" Device:");
       Serial.print(is);
       Serial.print(" ROM=");
-     
      
       for (int ii = 0; ii < 8;  ii++)
       {
@@ -189,16 +188,16 @@ void jg18b20ConvertState_2(OneWire ds)
    celsius = round((celsius * 10))/10;
 
 
-  if (celsius < 100) // kleine Wertueberpruefung
+  if ((celsius < 89) && (celsius > float(-20))) // kleine Wertueberpruefung
   {
     ds18x20_sensor[aktSensor].temperature= celsius;
+    Serial.printf("Sensor:%d Temp:%02.1f\n",aktSensor+1, celsius);
   }
-  //else
-  //{
-    //celsius = -99;
-  //}
-  Serial.printf("Sensor:%d Temp:%02.1f\n",aktSensor+1, celsius);
-
+  else
+  {
+    Serial.printf("*** ERROR Sensor:%d Temp:%02.1f\n",aktSensor+1, celsius);
+  }
+  
   aktSensor++;
   
   if (aktSensor >= 4)
@@ -217,7 +216,9 @@ float jg18b20GetValue(int i)
 // Sensor-Wert lesen (evt mit Schleife über Anzahl der Sensoren)
 // Wert in Grad Celsius
 // vorher muessen die ROM-Werte mit Search ermittelt werden
+// wird z.Z. nicht genutzt !!!
 ////////////////////////////////////////////////////////////////
+/*
 float jg18b20Read(OneWire ds, int x)
 {
    Serial.println("----Start 18b20Read--------");
@@ -258,7 +259,7 @@ float jg18b20Read(OneWire ds, int x)
            celsius = round((celsius * 10))/10;
 
 
-           if (celsius < 100) // kleine Wertueberpruefung
+           if (celsius < 90) // kleine Wertueberpruefung
            {
              ds18x20_sensor[x].temperature= celsius;
            }
@@ -280,3 +281,4 @@ float jg18b20Read(OneWire ds, int x)
      return celsius;
 
 }
+*/

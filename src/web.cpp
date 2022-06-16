@@ -1,10 +1,19 @@
 #include "web.h"
 #include "history.h"
+//#include <AsyncElegantOTA.h>
 //#include "ttgo_iodef.h"
 //#include "var_dev.h"
 //#include "io.h"
 
 static const char * hostName = "heizung";
+
+
+//AsyncEventSource events("/logevents");
+
+// z.Z. nicht genutzt
+//WiFiClient espClient;
+//PubSubClient mqttClient(espClient);
+
 
 // History String für SetDygraph
 // z.Z. noch nicht eingebunden !! (Stand 2019-03-16)
@@ -60,9 +69,37 @@ String uint64ToString(uint64_t input)
   } while (input);
   return result;}
 
+String httpGETRequest(const char* serverName) 
+{
+  WiFiClient client;
+  HTTPClient http;
+    
+  // Your Domain name with URL path or IP address with path
+  http.begin(client, serverName);
+  http.setTimeout(500);
+  
+  // Send HTTP POST request
+  int httpResponseCode = http.GET();
+  
+  String payload = ""; 
+  
+  if (httpResponseCode>0) {
+    //Serial.print("HTTP Response code: ");
+    //Serial.println(httpResponseCode);
+    payload = http.getString();
+  }
+  else {
+    Serial.print("*** HTTP-GET: Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  // Free resources
+  http.end();
+
+  return payload;
+}
 
 
-// Replaces placeholder with value
+// Replaces placeholder %XXXX% with value
 String setHtmlVar(const String& var)
 {
   Serial.print("func:setHtmlVar: ");
@@ -92,7 +129,7 @@ String setHtmlVar(const String& var)
 
   if(var == "HEIZUNG")
   {
-    if(Device_Heizung.active > 0)
+    if(Device_allg.bNetzON == true)
 	  {
       ledState = "ON";
     }
@@ -131,7 +168,7 @@ String setHtmlVar(const String& var)
 
   if (var == "TEMPHE")
   {
-      return String(Device_Heizung.temp_akt);
+      return String(Device_HeizRueckl.temp_akt);
   }
 
   if (var == "TEMPAU")
@@ -143,6 +180,17 @@ String setHtmlVar(const String& var)
   {
       return uint64ToString(Device_allg.sec_brenner_on_sum);
   }
+
+  if (var == "WWSOLL")
+  {
+    return String(Config_val.temp_ww_soll_ein);
+  }
+
+  if (var == "WINTER")
+  {
+    return String(Config_val.temp_winter_tag);
+  }
+  
 
   if (var == "CONFIG")
   {
@@ -168,6 +216,47 @@ String setHtmlVar(const String& var)
   return String();
 }
 
+ /*
+ static bool newMQTT=false;
+ void mqttCallback(char* topic, byte* payload, unsigned int length) 
+ {
+  newMQTT = true;
+  Serial.print("**** Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i=0;i<length;i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+}
+
+
+void mqtt_client_init()
+{
+    mqttClient.setServer("192.168.2.22", 1883);
+    mqttClient.setCallback(mqttCallback);
+    if (mqttClient.connect("heizung")) 
+    {
+    // connection succeeded
+    Serial.println("***Connected now subscribing***");
+    mqttClient.subscribe("tele/wetterstat/SENSOR"); 
+    if (mqttClient.connected())
+    {
+       Serial.println("***Connected now ***");
+       mqttClient.
+    }
+
+    } 
+    else 
+    {
+    // connection failed
+    // mqttClient.state() will provide more information
+    // on why it failed.
+    Serial.println("****Connection failed ****");
+    }
+
+}
+*/
 
 void server_init()
 {
@@ -191,11 +280,11 @@ void server_init()
     Serial.println("mDNS responder started");
   }
 
-  //Route for root /index1 web page
-  server.on("/index1.html",          HTTP_GET, [](AsyncWebServerRequest *request)
+  //Route for root /index web page
+  server.on("/index.html",          HTTP_GET, [](AsyncWebServerRequest *request)
   {
-   Serial.println("Request /index1.html");
-   request->send(SPIFFS, "/index1.html", String(), false, setHtmlVar);
+   Serial.println("Request /index.html");
+   request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
   });
 
   // Configuration
@@ -208,10 +297,10 @@ void server_init()
 
 
   //Route for root / web page
-  server.on("/",          HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/index1.html",          HTTP_GET, [](AsyncWebServerRequest *request)
   {
-   Serial.println("Request /index.html");
-   request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
+   Serial.println("Request /index1.html");
+   request->send(SPIFFS, "/index1.html", String(), false, setHtmlVar);
   });
 
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
@@ -221,7 +310,6 @@ void server_init()
   // Route to set GPIO to HIGH
   server.on("/onheiz",        HTTP_GET, [](AsyncWebServerRequest *request)
   {
-   Config_val.device_manuell=0;
    SetRelaisNetz(_EIN);
 
    request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
@@ -230,8 +318,6 @@ void server_init()
   // Route to set GPIO to LOW
   server.on("/offheiz",       HTTP_GET, [](AsyncWebServerRequest *request)
   {
-    Config_val.device_manuell=1;
-     //SetRelaisNetz(_AUS);
     request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
   });
 
@@ -260,7 +346,7 @@ void server_init()
     String brenner = "ON";
     String ventil  = "ON";
    
-    if (Device_Heizung.active == false)
+    if (Device_allg.bNetzON == false)
     {
        netz = "OFF";
     }
@@ -274,19 +360,20 @@ void server_init()
       brenner = "OFF";
     }
     
-    loop_active =true;
+    //loop_active =true;
     String s = String(Device_BrennerKessel.temp_akt) + "," +
                String(Device_WWSpeicher.temp_akt)    + "," +
-               String(Device_Heizung.temp_akt)    + "," +
+               String(Device_HeizRueckl.temp_akt)    + "," +
                String(Device_allg.temp_aussen)    + "," +
                netz + "," +
                ventil +"," +
                brenner + "," +
-               String(get_Heizoel_l_Verbrauch());
+               String(get_Heizoel_mLiter_Verbrauch())
+                + "," +
+               String(Device_allg.onStatus);
 
     request->send(200, "text/plain", s);
     Serial.println("server.on /fetch: "+ s);
-    loop_active = false;
   });
 
 
@@ -297,11 +384,11 @@ void server_init()
    request->send(SPIFFS, "/index3.html", String(), false, setHtmlVar);
   });
 
-  //Route for root /config.html web page
+  //Route  /config.html web page
   server.on("/config.html",          HTTP_POST, [](AsyncWebServerRequest *request)
   {
    Serial.println("Argument: " + request->argName(0));
-   Serial.println("Value: ");
+   Serial.print("Value: ");
    uint8_t i = 0;
    String s  = request->arg(i);
    Serial.println(s);
@@ -315,11 +402,10 @@ void server_init()
        history_save();
        ESP.restart();
    }
-   //Serial.println("Request /index3.html");
    request->send(SPIFFS, "/config.html", String(), false, setHtmlVar);
   });
-  
- 
+
+
   server.onNotFound([](AsyncWebServerRequest *request)
   {
      Serial.printf("NOT_FOUND: ");
@@ -335,8 +421,12 @@ void server_init()
          message += " NAME:"+request->argName(i) + "\n VALUE:" + request->arg(i) + "\n";
        }
        request->send(404, "text/plain", message);
-       Serial.println(message);  Serial.println("config.txt save OK!");
+       Serial.println(message);
     });
 
-    server.begin();
+  //AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+
+  AsyncWebLog.begin(&server);
+  AsyncWebOTA.begin(&server);
+  server.begin();
 }

@@ -10,17 +10,27 @@
 #include <ESP32Ping.h>
 
 #include <ESPAsyncWebServer.h>
+#include <HTTPClient.h>
+
+//z.Z. nicht genutzt
+//#include <PubSubClient.h>
 #include "SPIFFS.h"
 
-
-//#include "var_dev.h"
-//#include "ttgo_iodef.h"
+// Eigene Libs
+#include "AsyncWebLog.h"
+#include "AsyncWebOTA.h"
 
 static AsyncWebServer server(80);
 
-void server_init();
-//AsyncWebSocket ws("/test");
+// SSE Create an Event Source on /events
 
+extern AsyncEventSource events;
+// zZ. nicht genutzt
+//#define MQTT_SERVER "192.168.2.22"
+//extern void mqtt_client_init();
+
+void server_init();
+extern String httpGETRequest(const char* serverName);
 
 //const char* PARAM_MESSAGE = "MESSAGE";
 static String ledState;
