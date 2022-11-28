@@ -113,6 +113,8 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
   }
   });
   
+
+
   // TEST Uplaod handler (tut nichts ausser log !!)
   _server->on("/ota_update2",          HTTP_POST, [&](AsyncWebServerRequest *request)
   {
@@ -218,14 +220,12 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
                  ESP.restart();
             }, [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
                 //Upload handler chunks in data
-                
                 if (!index) 
                 {   
-                    for (uint8_t i=0; i<request->args(); i++)
-                    {
-                      Serial.println( "/ota_update request: argName: "+request->argName(i) + "  VALUE: " + request->arg(i));
-                    }
-                    
+                    Serial.print("request->args:");
+                    Serial.println(request->args());
+                    Serial.print("filename:");
+                    Serial.println(filename);
                     // z.Z. nur für Programm Daten (U_FLASH)
                     //int cmd = (filename == "filesystem") ? U_SPIFFS : U_FLASH;
                     if (!Update.begin(UPDATE_SIZE_UNKNOWN))
@@ -233,7 +233,7 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
                         Update.printError(Serial);
                         return request->send(400, "text/plain", "OTA could not begin!");
                     }
-                    Serial.println("UPDATE: BEGIN");
+                    Serial.println("UPDATE: Start");
                 }
 
                 // Write chunked data to the free sketch space
@@ -307,7 +307,6 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
         DEBUG_WEB_SERIAL("Attached AsyncWebServer with SSE");
     #endif
 }
-
 
 
 void AsyncWebOTAClass::progress(int iprogress){

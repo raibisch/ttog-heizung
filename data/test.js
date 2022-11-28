@@ -47,7 +47,6 @@ setInterval(function()
   //var y = Math.random();
   oReq.open("GET", "/fetch");
   oReq.send();
-  myDate();
   //data.push([dateNow, tempK, tempWW]);
   //g.updateOptions( { 'file': data } );
 }, 2000);

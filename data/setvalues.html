@@ -1,0 +1,43 @@
+
+     <!DOCTYPE html>
+     <html lang="de">
+      <script>
+        function onlyNumberKey(evt) 
+        {
+          
+          // Only ASCII character in that range allowed
+          var ASCIICode = (evt.which) ? evt.which : evt.keyCode
+          if (ASCIICode > 31 && (ASCIICode < 48 || ASCIICode > 57))
+            return false;
+          return true;
+        }
+  
+        function detailssubmit() 
+        {
+          alert("Your details were Submitted");
+        }
+      </script>
+
+
+<head>
+   <title>Log:</title>
+   <meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport">
+   <link rel="stylesheet" type="text/css" href="style.css">
+   <meta charset="UTF-8">
+</head>
+<body>
+        
+  <div class="container">
+        <p>Set Hist.-Values</p>
+        <form action="/setvalues.html" method="post">
+          <tr>
+            <th>  <label class="inputtext" for="oelverbauch">Oel (ml)</label></th>
+            <th> <input type="number" value="%HISTORY%" onkeypress="onlyNumberKey(event)"id="oelverbrauch" name="oelverbrauch"></th>
+            <th> <input  type="submit" formmethod="post" value="save"></th>
+          </tr>
+        </form> 
+        <a class="button3" href="config.html">zur&uuml;ck</a>
+  </div>
+</body>
+</html>
+     

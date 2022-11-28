@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+    <html>
+      <head>
+
+      <script>
+
+       function fun()
+        {
+         alert("hello");
+         //validation code to see State field is mandatory.  
+        }   
+
+        function f1()
+        {
+           alert("f1 called");
+           //form validation that recalls the page showing with supplied inputs.   
+           fun (); 
+        }
+
+      </script>
+      </head>
+      <body>
+       <form name="form1" id="form1" method="post">
+
+         State: <select id="state ID">
+                   <option></option>
+                   <option value="ap">ap</option>
+                   <option value="bp">bp</option>
+                </select>
+       </form>
+       <table><tr><td id="Save" onclick="f1()">click</td></tr></table>
+
+      </body>
+</html>

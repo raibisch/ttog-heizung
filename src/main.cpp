@@ -265,7 +265,7 @@ void t2_InputCallback(void)
   }
   */
   // ----------- IO Brenner aktiv -------------------
-  // Achtung 0 = aktiv
+  // Achtung neg. logic 1=AUS 0=aktiv
   if (digitalRead(IN_BRENNER))
   { // 1
     // Brenner AUS
@@ -601,15 +601,17 @@ void t8_WebRequest()
 {
    //Serial.println("--> t8_WebRequest Callback");
 
-  /*
+  
   if (!isFritzBoxPing())
   {
     delay(500);
     history_save();
-    ESP.restart();
+    WiFi.reconnect();
   }
-  */
+  
   // Wetterstation abfragen
+  // direkt von Wetterstation (Tastmota)
+  /*
   String s = httpGETRequest("http://192.168.2.71/cm?cmnd=status%2010");
   if (s.length() < 10)
   {
@@ -623,6 +625,25 @@ void t8_WebRequest()
     Serial.printf("**Temperatur von Wetterstation:%s\n", sTemp.c_str());
     Device_Wetterstation.temp_akt= sTemp.toFloat();
   }
+  oder :
+  von Domiticz */
+  String s = httpGETRequest("http://192.168.2.22/json.htm?type=devices&rid=45");
+  if (s.length() < 10)
+  {
+    return;
+  }
+  int ix1 = s.indexOf("Data\"");
+  int ix2 = s.indexOf("\"",ix1+5);
+  int ix3 = s.indexOf("\"",ix2+2);
+  if ((ix1 > 0) && (ix3 > ix2))
+  {
+    
+    String sTemp = s.substring(ix2+1,ix3-1);
+    Serial.printf("**Temperatur von Wetterstation:%s\n", sTemp.c_str());
+   
+    Device_Wetterstation.temp_akt= sTemp.toFloat();
+  }
+   
   
 }
 //**********************************************************

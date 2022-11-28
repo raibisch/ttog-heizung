@@ -91,6 +91,7 @@ String httpGETRequest(const char* serverName)
   else {
     Serial.print("*** HTTP-GET: Error code: ");
     Serial.println(httpResponseCode);
+    
   }
   // Free resources
   http.end();
@@ -178,7 +179,8 @@ String setHtmlVar(const String& var)
 
    if (var == "HISTORY")
   {
-      return uint64ToString(Device_allg.sec_brenner_on_sum);
+      Serial.println("%HISTORY%");
+      return uint64ToString(Device_allg.sec_brenner_on_sum * Config_val.mliter_oel_pro_h / 3600);
   }
 
   if (var == "WWSOLL")
@@ -296,6 +298,16 @@ void server_init()
   });
 
 
+  // Configuration
+  //Route for config web page
+  server.on("/setvalues.html",          HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+   Serial.println("Request /setvalues.html");
+   request->send(SPIFFS, "/setvalues.html", String(), false, setHtmlVar);
+  });
+
+
+
   //Route for root / web page
   server.on("/index1.html",          HTTP_GET, [](AsyncWebServerRequest *request)
   {
@@ -311,13 +323,13 @@ void server_init()
   server.on("/onheiz",        HTTP_GET, [](AsyncWebServerRequest *request)
   {
    SetRelaisNetz(_EIN);
-
    request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
   });
 
   // Route to set GPIO to LOW
   server.on("/offheiz",       HTTP_GET, [](AsyncWebServerRequest *request)
   {
+    SetRelaisNetz(_AUS);
     request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
   });
 
@@ -325,7 +337,6 @@ void server_init()
   server.on("/onventil",        HTTP_GET, [](AsyncWebServerRequest *request)
   {
     SetRelaisVentil(_EIN);
-  
    request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
   });
 
@@ -333,7 +344,6 @@ void server_init()
   server.on("/offventil",       HTTP_GET, [](AsyncWebServerRequest *request)
   {
     SetRelaisVentil(_AUS);
-    //digitalWrite(ledPin, LOW);
     request->send(SPIFFS, "/index.html", String(), false, setHtmlVar);
   });
 
@@ -404,6 +414,19 @@ void server_init()
    }
    request->send(SPIFFS, "/config.html", String(), false, setHtmlVar);
   });
+
+  //Route  /config.html web page
+  server.on("/setvalues.html",          HTTP_POST, [](AsyncWebServerRequest *request)
+  {
+  
+   Serial.println("Argument: " + request->argName(0));
+   Serial.print("Value: ");
+   uint8_t i = 0;
+   String s  = request->arg(i);
+   Serial.println(s);
+   request->send(SPIFFS, "/setvalues.html", String(), false, setHtmlVar);
+  });
+
 
 
   server.onNotFound([](AsyncWebServerRequest *request)
