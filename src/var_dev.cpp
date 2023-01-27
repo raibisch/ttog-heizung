@@ -59,7 +59,6 @@ int key2int(String sBuf, String sKey, int idefault=-1, int imin=0, int imax=9999
 
 // ... alles andere war mir zu kompliziert
 // Gueltige Beispieleinträge
-//
 //-------------------------------
 bool var_devLoadConfig() 
 {

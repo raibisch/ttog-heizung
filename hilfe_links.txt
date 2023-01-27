@@ -16,6 +16,7 @@ https://github.com/PaulStoffregen/OneWire
 Serielle Konsole für Website:
 https://registry.platformio.org/libraries/ayushsharma82/WebSerial/installation
 
+
 .. sehr viel kleiner !:
 https://github.com/Apthox/Javascript-Terminal
 

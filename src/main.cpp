@@ -145,12 +145,12 @@ bool isFritzBoxPing()
 {
   if(Ping.ping(remote_ip)) 
   {
-    Serial.println("**> Ping zur FritzBox OK!");
+    Serial.println("** Ping zur FritzBox OK!");
     return true;
   } 
   else 
   {
-    Serial.println("****> KEIN PING ZUR FRITZBOX MOEGLICH ***");
+    Serial.println("-- KEIN PING ZUR FRITZBOX MOEGLICH ---");
     return false;
   }
 }
@@ -204,9 +204,9 @@ void menu_display()
   Menu_akt = Menu[Menu_akt].next_menuix;
 
   // Ueberschriften für Temp
-  display_Text9pt(1,20,"Kessel");
-  display_Text9pt(75,20,"W.W.");
-  display_Text9pt(75+75,20,"Heiz.");
+  display_Text9pt(1,20,       "Kessel");
+  display_Text9pt(75,20,      "W.W.");
+  display_Text9pt(75+75,20,   "Rueckl.");
   display_Text9pt(75+75+75,20,"Aussen");
 }
 
@@ -322,38 +322,63 @@ void t2_InputCallback(void)
 
 }
 
-// Task Ventil (Heinzung/Warmwasser) Steuerung
+
 // hier kann noch etwas mehr "Intelligenz" eingebaut werden
 // *******************************************************************
 // ACHTUNG: wird hier NIE ausgeschaltet, da dies im Nachlauf geschieht
 // *******************************************************************
-
 // IDEE: WW-Ventil im Winter nicht zu lange eingeschaltet lassen, da dann die Heizkörper nicht versorgt werden
 // ... mal sehen ob das im Winter funktioniert
 uint16_t ventil_winter_on_toggle =0;
 uint16_t ventil_winter_off_toggle = 0;
-
+/// @brief Task Ventil (Heinzung/Warmwasser) Steuerung --------------
 void t3_VentilCallback()
 {
-   if (Config_val.ventil_manuell == 1)
-   {
-     AsyncWebLog.println("Ventil-MANUELL");
-     return;
-   }
+    if (Config_val.ventil_manuell == 1)
+    {
+      AsyncWebLog.println("WW-Ventil-MANUELL");
+      return;
+    }
 
+  
+   // WW-Ventil nur schalten wenn auch Netz da ist 
+   //(...ergibt sich aber von selbst wenn Netz auch Ventil abschaltet)
    if ( Device_allg.bNetzON==true)
    {
+     
+      // neu: 25.1.2023 Test WW-Ventil nicht an, wenn Kessel kälter als WW
+      if (Device_BrennerKessel.temp_akt+1 < Device_WWSpeicher.temp_akt)
+      {
+         AsyncWebLog.println("Kessel < WW: WW-AUS");
+         SetRelaisVentil(false);
+         return;
+      }
+
      // Sommerbetrieb
      if (Device_Wetterstation.temp_akt > Config_val.temp_winter_tag)
      {
-         AsyncWebLog.println("SOMMERBETRIEB: Ventil-EIN");
+         AsyncWebLog.println("SOMMERBETRIEB: WW-EIN");
          SetRelaisVentil(true);
          return;
      }
      else
      { // Winterbetrieb
+        
+      // neu: 25.1.2023 Test "die Spitze mitnehmen"
+      // 27.1.2023 wieder auskommentiert
+      /**
+      if ((Device_BrennerKessel.temp_akt > Config_val.temp_ww_soll_aus+3) &&
+         (Device_BrennerKessel.temp_akt > Device_WWSpeicher.temp_akt+4))
+      {
+          ventil_winter_off_toggle = 0;
+          AsyncWebLog.println("WINTERBETRIEB:WW-Ein (Kessel > WW )");
+          SetRelaisVentil(true);
+          return;
+      }
+      */
 
-      // Wasser warm genug
+      
+      // Wasser warm genug (tmp_ww_soll_aus = obere Grenze)
       if (Device_WWSpeicher.temp_akt >= Config_val.temp_ww_soll_aus)
       {
          ventil_winter_on_toggle=0;
@@ -362,33 +387,33 @@ void t3_VentilCallback()
          return;
       }
 
-      // Wasser zu kalt
+      // Toggel-Betrieb: Wasser zu kalt (temp_wwsoll_ein = untere Grenze)
       if (Device_WWSpeicher.temp_akt < Config_val.temp_ww_soll_ein)
       {
-      
-        AsyncWebLog.println("WINTERBETRIEB: WW zu kalt");
+        AsyncWebLog.println("WINTER: WW zu kalt");
         if (Device_WWSpeicher.active)
         {
-           String s = "WINTERBETRIEB: WW-ON countdown:" + String(Config_val.time_minute_ww_winter*120 - ventil_winter_on_toggle);
+           String s = "WINTERBETRIEB: WW-ON countdown:" + String(Config_val.time_minute_ww_winter*20 - ventil_winter_on_toggle);
            AsyncWebLog.println(s);
            ventil_winter_on_toggle++;
            
-           if (ventil_winter_on_toggle > Config_val.time_minute_ww_winter*120)
+           if (ventil_winter_on_toggle > Config_val.time_minute_ww_winter*20)
            {
             ventil_winter_on_toggle = 0;
-             AsyncWebLog.println("WINTERBETRIEB: SET Ventil-AUS (Toggel-Betrieb)");
+            
+             AsyncWebLog.println("WINTER: WW-OFF (Toggle)");
             SetRelaisVentil(false);
            }
         }
         else
         {
-          String s = "WINTERBETRIEB: WW-OFF-countdown:" + String(Config_val.time_minute_ww_winter*120 - ventil_winter_off_toggle);
+          String s = "WINTERBETRIEB: WW-OFF-countdown:" + String(Config_val.time_minute_ww_winter*20 - ventil_winter_off_toggle);
           AsyncWebLog.println(s);
           ventil_winter_off_toggle++;
-          if (ventil_winter_off_toggle > Config_val.time_minute_ww_winter*120)
+          if (ventil_winter_off_toggle > Config_val.time_minute_ww_winter*20)
           {
             ventil_winter_off_toggle = 0;
-            AsyncWebLog.println("WINTERBETRIEB: SET Ventil-EIN (Toggle-Betrieb)");
+            AsyncWebLog.println("WINTER: WW-ON (Toggle)");
             SetRelaisVentil(true);
           }
         }
@@ -402,12 +427,11 @@ void t3_VentilCallback()
    
 }
 
-// ALT:Task Pumpe Steuerung
-// neu: JETZT NETZ Steuerung !!
+
 // auch hier kann noch etwas mehr "Intelligenz" eingebaut werden
 static bool bNachlauf_active = false;
 static uint8_t off_hour, off_minu;
-// ***********************************************
+/// @brief  Task NEZT Steuerung ------------------
 void t4_NetzOnCallback()
 {
   //Serial.println("--> NetzOnCallback");
@@ -440,11 +464,14 @@ void t4_NetzOnCallback()
     return;
   }
 
+  // damit kann mein leichter rechnen !!
+  // aktuell (Minuten seit 00:00)
   uint16_t minday_akt = timeClient.getHours()*60 + timeClient.getMinutes();
 
-  // Vorgabe Einschalten: Wochentag-ON
+  //  Vorgabe Einschalten: Wochentag-ON (Minuten seit 00:00)
   uint16_t minday_calc_on  = Config_val.hour_heizung_werktag_on*60 + Config_val.minute_heizung_werktag_on;
-  // Vorgabe Auschalten: Winter-OFF
+
+  // Vorgabe Auschalten: Winter-OFF (Minuten seit 00:00)
   uint16_t minday_calc_off = Config_val.hour_heizung_winter_off*60 + Config_val.minute_heizung_winter_off;
   off_hour = Config_val.hour_heizung_winter_off; off_minu = Config_val.minute_heizung_winter_off;
 
@@ -468,7 +495,7 @@ void t4_NetzOnCallback()
     return;
   }
   
-  // Test Sommer-TAG EIN
+  // Test Sommer-TAG EIN (Minuten seit 00:00)
   minday_calc_off = Config_val.hour_heizung_sommer_off*60 + Config_val.minute_heizung_sommer_off;
   off_hour = Config_val.hour_heizung_sommer_off; off_minu = Config_val.minute_heizung_sommer_off;
   if ((minday_akt > minday_calc_on) && (minday_akt < minday_calc_off))
@@ -486,8 +513,8 @@ void t4_NetzOnCallback()
     else
     {
       AsyncWebLog.println("STATUS:EIN Sommer Zeitschalt.");
-     SetRelaisNetz(_EIN);
-     return;
+      SetRelaisNetz(_EIN);
+      return;
     }
   }
 
@@ -523,6 +550,7 @@ void t4_NetzOnCallback()
   }
 }
 
+/// @brief Nachlaufzeit fuer Pumpe abgelaufen ---------------------------
 void t5_PumpeNachlaufCallback()
 {
  
@@ -545,6 +573,7 @@ void t5_PumpeNachlaufCallback()
   
 }
 
+/// @brief Callback OneWire Temp DS18d20 auslesen -------------------------------
 void t6_ds18d20S1Callback()
 {  
   //Serial.println("--> ds1820_S1 Callback");
@@ -581,18 +610,19 @@ void t7_ds18d20S2Callback()
      Device_HeizRueckl.temp_akt    = tmpf; 
       old_val[Config_val.sensor_ix_ruecklauf] = tmpf;
    }
-   
-   tmpf = jg18b20GetValue(Config_val.sensor_ix_aussen);
-   if (Device_Wetterstation.temp_akt != 0)
-   {
+
+   //z.Z Wert ueber Wetterstation (Domoticz) einlesen 
+   //tmpf = jg18b20GetValue(Config_val.sensor_ix_aussen);
+   //if (Device_Wetterstation.temp_akt != 0)
+   //{
         Device_allg.temp_aussen = Device_Wetterstation.temp_akt;
-   }
-   else
-   if  (tmpf != -0.1)
-   {
-     Device_allg.temp_aussen   = tmpf; 
-    old_val[Config_val.sensor_ix_aussen] = tmpf;
-   }
+   //}
+   //else
+   //if  (tmpf != -0.1)
+   //{
+   //  Device_allg.temp_aussen   = tmpf; 
+   // old_val[Config_val.sensor_ix_aussen] = tmpf;
+   //}
 
 }
 
@@ -607,9 +637,10 @@ void t8_WebRequest()
     delay(500);
     history_save();
     WiFi.reconnect();
+    return;
   }
   
-  // Wetterstation abfragen
+  // **********Wetterstation abfragen *******************************
   // direkt von Wetterstation (Tastmota)
   /*
   String s = httpGETRequest("http://192.168.2.71/cm?cmnd=status%2010");
@@ -625,21 +656,23 @@ void t8_WebRequest()
     Serial.printf("**Temperatur von Wetterstation:%s\n", sTemp.c_str());
     Device_Wetterstation.temp_akt= sTemp.toFloat();
   }
-  oder :
-  von Domiticz */
-  String s = httpGETRequest("http://192.168.2.22/json.htm?type=devices&rid=45");
+  */
+
+  // oder :
+  // von Domiticz
+  String s = httpGETRequest("http://192.168.2.22/json.htm?type=devices&rid=24");
   if (s.length() < 10)
   {
     return;
   }
   int ix1 = s.indexOf("Data\"");
   int ix2 = s.indexOf("\"",ix1+5);
-  int ix3 = s.indexOf("\"",ix2+2);
+  int ix3 = s.indexOf("C",ix2+2);
   if ((ix1 > 0) && (ix3 > ix2))
   {
     
     String sTemp = s.substring(ix2+1,ix3-1);
-    Serial.printf("**Temperatur von Wetterstation:%s\n", sTemp.c_str());
+    Serial.printf("**TempAussen von Domiticz:%s\n", sTemp.c_str());
    
     Device_Wetterstation.temp_akt= sTemp.toFloat();
   }
@@ -663,8 +696,11 @@ void wifi_init()
   delay(1000);
   //display_Text9pt(187,0,".CONNECT");
   int i = 0;
+#ifdef HELTEC_WIFI_KIT32
   WiFi.setHostname("Heizungtest");
-
+#else
+   WiFi.setHostname("Heizung");
+#endif
   int wifiClientConnectionTimeoutSeconds = 5;
   int timeoutCounter = wifiClientConnectionTimeoutSeconds * (1000 / 150);
   while (WiFi.status() != WL_CONNECTED && timeoutCounter > 0)

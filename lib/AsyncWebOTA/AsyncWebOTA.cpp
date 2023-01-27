@@ -100,11 +100,11 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
    Serial.println("Request /ota.html");
     if (request->args() > 0)
    {
-     
-        Serial.println("Argument: " + request->argName(0));
+        Serial.println("OTA-No of args:" + request->args());
+        Serial.println("OTA-Argument: " + request->argName(0));
          uint8_t i = 0;
          String s  = request->arg(i);
-        Serial.println("  Value: " + s);
+        Serial.println("OTA-Value: " + s);
 
    } 
   else
@@ -203,8 +203,7 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
   });
    **/
 
-
-  
+ 
   // aus AsyncElegantOTA
   _server->on("/ota_update", HTTP_POST, [&](AsyncWebServerRequest *request) 
   {
@@ -224,15 +223,23 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
                 {   
                     Serial.print("request->args:");
                     Serial.println(request->args());
-                    Serial.print("filename:");
+          
                     Serial.println(filename);
                     // z.Z. nur für Programm Daten (U_FLASH)
-                    //int cmd = (filename == "filesystem") ? U_SPIFFS : U_FLASH;
-                    if (!Update.begin(UPDATE_SIZE_UNKNOWN))
+                    int cmd = U_FLASH;
+                    if (filename.indexOf("spiff") > 2)
+                    {
+                      cmd = U_SPIFFS;
+                      Serial.println("SPIFFS");
+                    }
+                   
+#ifndef MAKE_UPDATE                
+                    if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
                     { // Start with max available size
                         Update.printError(Serial);
                         return request->send(400, "text/plain", "OTA could not begin!");
                     }
+#endif
                     Serial.println("UPDATE: Start");
                 }
 
@@ -240,10 +247,12 @@ void AsyncWebOTAClass::begin(AsyncWebServer *server, const char* url)
                 if(len)
                 {
                     Serial.println("UPDATE lenth:" + String(len));
+#ifndef MAKE_UPDATE
                     if (Update.write(data, len) != len) 
                     {
                         return request->send(400, "text/plain", "OTA length does not match!");
                     }
+#endif
                 }
                     
                 if (final) 
