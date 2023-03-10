@@ -203,7 +203,7 @@ void AsyncWebLogClass::println(double m)
 void AsyncWebLogClass::println(String m)
 {
     String s = m +"<LF>";
-    _events->send(s.c_str(),"logprint", millis());        
+    _events->send(s.c_str(),"logprint", millis(),10000);        
 }
 
 

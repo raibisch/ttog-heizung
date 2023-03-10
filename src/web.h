@@ -30,7 +30,7 @@ extern AsyncEventSource events;
 //extern void mqtt_client_init();
 
 void server_init();
-extern String httpGETRequest(const char* serverName);
+extern String httpGETRequest(String url);
 
 //const char* PARAM_MESSAGE = "MESSAGE";
 static String ledState;

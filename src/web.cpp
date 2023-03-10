@@ -70,15 +70,47 @@ String uint64ToString(uint64_t input)
   return result;
 }
 
-String httpGETRequest(const char *serverName)
+
+
+String httpGETRequest(String url)
 {
-  WiFiClient client;
-  HTTPClient http;
-
-  // Your Domain name with URL path or IP address with path
-  http.begin(client, serverName);
+  String payload = "";
+  
+  HTTPClient http; 
   http.setTimeout(500);
+  http.begin(url); //HTTP
+  int httpCode = http.GET();
 
+  // httpCode will be negative on error
+  if(httpCode > 0) 
+  {
+            // HTTP header has been send and Server response header has been handled
+            // file found at server
+            if(httpCode == HTTP_CODE_OK) 
+            {
+                payload = http.getString();
+            }
+  } else 
+  {
+      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+  return payload;
+}
+
+// macht probleme
+// evt mal dies ausprobieren
+// https://github.com/boblemaire/asyncHTTPrequest
+/*
+static HTTPClient http;
+static WiFiClient wc;
+String httpGETRequest_old(const char *serverName)
+{
+  // Your Domain name with URL path or IP address with path
+    http.begin(wc, serverName);
+    http.setTimeout(500);
+ 
   // Send HTTP POST request
   int httpResponseCode = http.GET();
 
@@ -96,10 +128,14 @@ String httpGETRequest(const char *serverName)
     Serial.println(httpResponseCode);
   }
   // Free resources
-  http.end();
 
+  http.end();
+  wc.stop();
+ 
   return payload;
 }
+*/
+
 
 // Replaces placeholder %XXXX% with value
 String setHtmlVar(const String &var)
@@ -309,7 +345,8 @@ void server_init()
    request->send(SPIFFS, "/index1.html", String(), false, setHtmlVar); });
 
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-  // bringt nichts: server.serveStatic("/", SPIFFS, "/").setTemplateProcessor(setHtmlVar);
+  // bringt nichts:
+  // server.serveStatic("/", SPIFFS, "/").setTemplateProcessor(setHtmlVar);
 
   // Route to set GPIO to HIGH
   server.on("/onheiz", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -358,20 +395,18 @@ void server_init()
     }
     
     //loop_active =true;
-    String s = String(Device_BrennerKessel.temp_akt) + "," +
-               String(Device_WWSpeicher.temp_akt)    + "," +
-               String(Device_HeizRueckl.temp_akt)    + "," +
-               String(Device_allg.temp_aussen)    + "," +
-               netz + "," +
-               ventil +"," +
-               brenner + "," +
-               String(get_Heizoel_mLiter_Verbrauch())
-                + "," +
+    String s = String(Device_BrennerKessel.temp_akt)  + "," +
+               String(Device_WWSpeicher.temp_akt)     + "," +
+               String(Device_HeizRueckl.temp_akt)     + "," +
+               String(Device_allg.temp_aussen)        + "," +
+               netz                                   + "," +
+               ventil                                 + "," +
+               brenner                                + "," +
+               String(get_Heizoel_mLiter_Verbrauch()) + "," +
                String(Device_allg.onStatus);
 
     request->send(200, "text/plain", s);
-    Serial.println("server.on /fetch: "+ s); 
-            });
+    Serial.println("server.on /fetch: "+ s); });
 
   // Route for root /index1 web page
   server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request)

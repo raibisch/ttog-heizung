@@ -45,7 +45,9 @@ typedef struct
   uint16_t mliter_oel_pro_h = 1800; // 0,4Duese, 10bar, 50gradC http://www.martin-havenith.de/Betrieb___Wartung/FluidicsTabelle.pdf
                                           // sec/2=Verbrauch in ml --> sec*3600*1000/2= Verbrauch in l
 
-  // nicht in config.txt !!
+  String netz_http_switch = "192.168.2.33/cm?cmnd=Power"; // + "%20ON"  .. + "%20OFF"
+
+  // nicht in config.txt sondern in history
   uint64_t oel_verbrauch_sec =0;
   
 
